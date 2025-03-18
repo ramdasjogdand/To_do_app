@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: to-do-app
+  labels:
+    app: to-do-app
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: to-do-app
+  template:
+    metadata:
+      labels:
+        app: to-do-app
+    spec:
+      serviceAccountName: to-do-app-sa
+      containers:
+        - name: to-do-app
+          image: ramdas1999/new-to-do-app:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: SECRET_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: key-secret
+                  key: KEY_SECRET
+          volumeMounts:
+            - name: secret-volume
+              mountPath: "/etc/secret"
+              readOnly: true
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: key-secret
